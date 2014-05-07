@@ -4,7 +4,7 @@
 # fail fast
 set -e
 
-logger -p user.notice -t "slugc[$$]" "language_pack_java java_compile_start"
+logger -p user.notice -t "slugc[$$]" "Datomic install_start"
 
 BIN_DIR=$(cd $(dirname $0); pwd) # absolute path
 
@@ -21,18 +21,6 @@ curl --silent --location http://heroku-jvm-common.s3.amazonaws.com/jvm-buildpack
 
 export_env_dir $ENV_DIR
 
-KEEP_M2_CACHE="true"
-
-if [ ! -d $CACHE_DIR ]; then
-  KEEP_M2_CACHE="false"
-elif [ -f $CACHE_DIR/removeM2Cache ]; then
-  KEEP_M2_CACHE="false"
-fi
-
-if [ "true" == $KEEP_M2_CACHE ]; then
-  logger -p user.notice -t "slugc[$$]" "language_pack_java retain_m2_repo"
-fi
-
 #create the cache dir if it doesn't exist
 mkdir -p $CACHE_DIR
 
@@ -48,59 +36,35 @@ install_java ${BUILD_DIR} ${javaVersion}
 jdk_overlay ${BUILD_DIR}
 echo " done"
 
-# change to cache dir to install maven
-cd $CACHE_DIR
-
-# install maven with base repository
-MAVEN_URL="http://s3.amazonaws.com/heroku-jvm-langpack-java/maven.tar.gz"
-
-if [ ! -d .maven ]; then
-  echo -n "-----> Installing Maven 3.0.3..."
-  curl --silent --max-time 60 --location $MAVEN_URL | tar xz
-  chmod +x .maven/bin/mvn
-  echo " done"
+if [ -z "${DATOMIC_VERSION}" ]
+then
+    DATOMIC_VERSION=0.9.4766 # Use a recent version by default
 fi
 
-MAVEN_SETTINGS_URL="http://s3.amazonaws.com/heroku-jvm-langpack-java/settings.xml"
+DATOMIC_FREE_VERSION=true
 
-echo -n "-----> Installing settings.xml..."
-if [ -f .m2/settings.xml ]; then
-  rm .m2/settings.xml 
-fi
-curl --silent --max-time 10 --location $MAVEN_SETTINGS_URL --output .m2/settings.xml
-echo " done"
-
-# change to build dir to run maven
-cd $BUILD_DIR
-
-export MAVEN_OPTS="-Xmx1024m"
-
-# build app
-BUILDCMD="$CACHE_DIR/.maven/bin/mvn -B -Duser.home=$BUILD_DIR -Dmaven.repo.local=$CACHE_DIR/.m2/repository -s $CACHE_DIR/.m2/settings.xml -DskipTests=true clean install"
-echo "-----> executing $BUILDCMD"
-
-$BUILDCMD 2>&1 | sed -u 's/^/       /'
-
-if [ "${PIPESTATUS[*]}" != "0 0" ]; then
-  echo " !     Failed to build app with Maven"
-  exit 1
+if [ -z "${DATOMIC_LICENSE_USER}" && -z "${DATOMIC_LICENSE_PASS}" ]
+then
+    DATOMIC_FREE_VERSION=false
 fi
 
-# finalize cache
-if [ "false" == $KEEP_M2_CACHE ]; then
-  touch $CACHE_DIR/removeM2Cache
-fi
-
-#copy .m2 and .maven if needed
-if [ "true" == $KEEP_M2_CACHE ]; then
-  for DIR in ".m2" ".maven" ; do
-    cp -r $CACHE_DIR/$DIR $DIR
-  done
+if [ ${DATOMIC_FREE_VERSION} == "true" ]
+then
+    echo -n "-----> Installing the Free version of Datomic ${DATOMIC_VERSION}"
+    curl -L --silent https://my.datomic.com/downloads/free/${DATOMIC_VERSION} | tar xz
+    mv datomic-free-${DATOMIC_VERSION} datomic
+    echo " done"
+else
+    echo -n "-----> Installing the Pro version of Datomic ${DATOMIC_VERSION}"
+    curl -L --silent -u ${DATOMIC_LICENSE_USER}:${DATOMIC_LICENSE_PASS} https://my.datomic.com/repo/com/datomic/datomic-pro/${DATOMIC_VERSION}/datomic-pro-${DATOMIC_VERSION}.zip | tar xz
+    mv datomic-pro-${DATOMIC_VERSION} datomic
+    echo " done"
 fi
 
 PROFILE_PATH="$BUILD_DIR/.profile.d/java.sh"
 mkdir -p $(dirname $PROFILE_PATH)
 echo 'export PATH="/app/.jdk/bin:$PATH"' >> $PROFILE_PATH
+echo 'export PATH="/app/datomic/bin:$PATH"' >> $PROFILE_PATH
 echo 'export JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -Djava.rmi.server.useCodebaseOnly=true"' >> $PROFILE_PATH
 
-logger -p user.notice -t "slugc[$$]" "language_pack_java java_compile_end $LOGGER_FLAGS"
+logger -p user.notice -t "slugc[$$]" "Datomic install_end $LOGGER_FLAGS"
