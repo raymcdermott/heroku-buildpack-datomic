@@ -36,8 +36,6 @@ install_java ${BUILD_DIR} ${javaVersion}
 jdk_overlay ${BUILD_DIR}
 echo " done"
 
-set -x
-
 if [ -z "${DATOMIC_VERSION}" ]
 then
     DATOMIC_VERSION=0.9.4766 # Use a recent version by default
@@ -64,6 +62,8 @@ else
     mv datomic-pro-${DATOMIC_VERSION} ${BUILD_DIR}/datomic
     echo " done"
 fi
+
+chmod -R +x ${BUILD_DIR}/datomic
 
 PROFILE_PATH="$BUILD_DIR/.profile.d/java.sh"
 mkdir -p $(dirname $PROFILE_PATH)
