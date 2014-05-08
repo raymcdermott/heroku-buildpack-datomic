@@ -45,7 +45,7 @@ fi
 
 DATOMIC_FREE_VERSION=true
 
-if [ -z "${DATOMIC_LICENSE_USER}" ] && [ -z "${DATOMIC_LICENSE_PASS}" ]
+if [ -n "${DATOMIC_LICENSE_USER}" ] && [ -n "${DATOMIC_LICENSE_PASS}" ]
 then
     DATOMIC_FREE_VERSION=false
 fi
@@ -55,11 +55,13 @@ then
     echo -n "-----> Installing the Free version of Datomic ${DATOMIC_VERSION}"
     curl -L --silent https://my.datomic.com/downloads/free/${DATOMIC_VERSION} > datomic.zip
     jar xf datomic.zip
+    ls
     mv datomic-free-${DATOMIC_VERSION} datomic
     echo " done"
 else
     echo -n "-----> Installing the Pro version of Datomic ${DATOMIC_VERSION}"
     curl -L --silent -u ${DATOMIC_LICENSE_USER}:${DATOMIC_LICENSE_PASS} https://my.datomic.com/repo/com/datomic/datomic-pro/${DATOMIC_VERSION}/datomic-pro-${DATOMIC_VERSION}.zip > datomic.zip
+    ls
     jar xf datomic.zip
     mv datomic-pro-${DATOMIC_VERSION} datomic
     echo " done"
