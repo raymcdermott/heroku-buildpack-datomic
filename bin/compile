@@ -45,7 +45,7 @@ fi
 
 DATOMIC_FREE_VERSION=true
 
-if [ -z "${DATOMIC_LICENSE_USER}" && -z "${DATOMIC_LICENSE_PASS}" ]
+if [ -z "${DATOMIC_LICENSE_USER}" ] && [ -z "${DATOMIC_LICENSE_PASS}" ]
 then
     DATOMIC_FREE_VERSION=false
 fi
