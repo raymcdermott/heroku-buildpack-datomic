@@ -36,6 +36,8 @@ install_java ${BUILD_DIR} ${javaVersion}
 jdk_overlay ${BUILD_DIR}
 echo " done"
 
+set -x
+
 if [ -z "${DATOMIC_VERSION}" ]
 then
     DATOMIC_VERSION=0.9.4766 # Use a recent version by default
