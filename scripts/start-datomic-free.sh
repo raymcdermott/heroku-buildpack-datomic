@@ -6,6 +6,8 @@ sed "s/^port=4334/port=$PORT/" ${PROPERTIES} > ${PROPERTIES}.tmp
 
 mv ${PROPERTIES}.tmp ${PROPERTIES}
 
+unset JAVA_OPTS
+
 transactor ${PROPERTIES}
 
 
