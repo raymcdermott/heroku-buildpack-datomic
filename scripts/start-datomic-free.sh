@@ -8,6 +8,6 @@ mv ${PROPERTIES}.tmp ${PROPERTIES}
 
 unset JAVA_OPTS
 
-transactor ${PROPERTIES}
+transactor -Xmx512m -Xms256m ${PROPERTIES}
 
 
