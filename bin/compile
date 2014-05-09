@@ -68,7 +68,7 @@ fi
 
 cp -R ${ROOT_DIR}/scripts/* ${BUILD_DIR}
 
-chmod -R +x ${BUILD_DIR}/datomic
+chmod -R +x ${BUILD_DIR}
 
 PROFILE_PATH="$BUILD_DIR/.profile.d/java.sh"
 mkdir -p $(dirname $PROFILE_PATH)
