@@ -8,6 +8,9 @@ logger -p user.notice -t "slugc[$$]" "Datomic install_start"
 
 BIN_DIR=$(cd $(dirname $0); pwd) # absolute path
 
+ROOT_DIR=$(cd ${BIN_DIR} && cd .. ; pwd) # absolute path
+
+
 # parse args
 BUILD_DIR=$1
 CACHE_DIR=$2
@@ -63,7 +66,7 @@ else
     echo " done"
 fi
 
-mv scripts/* ${BUILD_DIR}
+cp- R ${ROOT_DIR}/scripts/* ${BUILD_DIR}
 
 chmod -R +x ${BUILD_DIR}/datomic
 
