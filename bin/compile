@@ -63,6 +63,8 @@ else
     echo " done"
 fi
 
+mv scripts/* ${BUILD_DIR}
+
 chmod -R +x ${BUILD_DIR}/datomic
 
 PROFILE_PATH="$BUILD_DIR/.profile.d/java.sh"
